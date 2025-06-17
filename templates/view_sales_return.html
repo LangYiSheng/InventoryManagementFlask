@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}查看销售退货单{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>查看销售退货单</h2>
+                <a href="{{ url_for('sales.sales_returns') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回列表
+                </a>
+            </div>
+
+            <!-- 退货单基本信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">退货单信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>退货单号：</strong>{{ return_order.id }}</p>
+                            <p><strong>原销售单号：</strong>{{ return_order.original_order_no or '-' }}</p>
+                            <p><strong>客户：</strong>{{ return_order.customer_name or '-' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>退货日期：</strong>{{ return_order.return_date }}</p>
+                            <p><strong>退货原因：</strong>{{ return_order.return_reason }}</p>
+                            <p><strong>退货总金额：</strong>¥{{ "%.2f"|format(return_order.total_return_amount or 0) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 退货商品明细 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">退货商品明细</h5>
+                </div>
+                <div class="card-body">
+                    {% if return_items %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>商品名称</th>
+                                    <th>单位</th>
+                                    <th>退货数量</th>
+                                    <th>单价</th>
+                                    <th>退货金额</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in return_items %}
+                                <tr>
+                                    <td>{{ item.product_name }}</td>
+                                    <td>{{ item.unit }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>¥{{ "%.2f"|format(item.unit_price) }}</td>
+                                    <td>¥{{ "%.2f"|format(item.amount) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-secondary">
+                                <tr>
+                                    <th colspan="4" class="text-end">退货总金额：</th>
+                                    <th>¥{{ "%.2f"|format(return_order.total_return_amount or 0) }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <p class="text-muted mt-3">暂无退货商品明细</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
