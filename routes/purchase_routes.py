@@ -130,33 +130,45 @@ def edit_purchase(id):
                     confirm_conn.close()
         
         elif action == 'add_item':
-            # 保存商品明细（先删除现有记录再重新添加）
-            # conn 在此action内部管理
+            # 保存商品明细
             add_item_conn = get_db_connection()
             try:
-                # 删除现有商品明细
-                add_item_conn.execute('DELETE FROM purchase_order_items WHERE order_id = ?', (id,))
-                
-                # 获取所有商品数据
+                # 获取现有商品明细
+                existing_items_raw = add_item_conn.execute('SELECT product_id, quantity, unit_price FROM purchase_order_items WHERE order_id = ?', (id,)).fetchall()
+                existing_items = {(item['product_id'], float(item['quantity']), float(item['unit_price'])) for item in existing_items_raw}
+
+                # 获取表单提交的商品数据
                 product_ids = request.form.getlist('product_id')
                 quantities = request.form.getlist('quantity')
                 unit_prices = request.form.getlist('unit_price')
-                
-                # 重新添加商品明细
+
+                current_items = set()
+                new_items_data = []
                 for i in range(len(product_ids)):
                     if product_ids[i] and quantities[i] and unit_prices[i]:
                         product_id = int(product_ids[i])
                         quantity = float(quantities[i])
                         unit_price = float(unit_prices[i])
-                        amount = quantity * unit_price
-                        
+                        current_items.add((product_id, quantity, unit_price))
+                        new_items_data.append({'product_id': product_id, 'quantity': quantity, 'unit_price': unit_price, 'amount': quantity * unit_price})
+
+                # 检查是否有变化
+                if existing_items != current_items:
+                    # 删除现有商品明细
+                    add_item_conn.execute('DELETE FROM purchase_order_items WHERE order_id = ?', (id,))
+                    
+                    # 重新添加商品明细
+                    for item_data in new_items_data:
                         add_item_conn.execute('''
                             INSERT INTO purchase_order_items (order_id, product_id, quantity, unit_price, amount)
                             VALUES (?, ?, ?, ?, ?)
-                        ''', (id, product_id, quantity, unit_price, amount))
-                
-                add_item_conn.commit()
-                flash('采购单保存成功！', 'success')
+                        ''', (id, item_data['product_id'], item_data['quantity'], item_data['unit_price'], item_data['amount']))
+                    
+                    add_item_conn.commit()
+                    flash('采购单商品明细已更新！', 'success')
+                else:
+                    flash('商品明细未发生变化。', 'info')
+
             except Exception as e:
                 add_item_conn.rollback()
                 flash(f'保存失败：{str(e)}', 'error')

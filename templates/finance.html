@@ -76,12 +76,10 @@
                             <label for="transaction_type" class="form-label">交易类型</label>
                             <select class="form-select" id="transaction_type" name="transaction_type">
                                 <option value="">全部类型</option>
-                                <option value="income" {{ 'selected' if request.args.get('transaction_type')=='income'
-                                    }}>收入</option>
-                                <option value="expense" {{ 'selected' if request.args.get('transaction_type')=='expense'
-                                    }}>支出</option>
-                                <option value="adjustment" {{ 'selected' if
-                                    request.args.get('transaction_type')=='adjustment' }}>调整</option>
+                                <option value="销售收入" {{ 'selected' if request.args.get('transaction_type')=='销售收入' }}>销售收入</option>
+                                <option value="采购支出" {{ 'selected' if request.args.get('transaction_type')=='采购支出' }}>采购支出</option>
+                                <option value="采购退款" {{ 'selected' if request.args.get('transaction_type')=='采购退款' }}>采购退款</option>
+                                <option value="调整" {{ 'selected' if request.args.get('transaction_type')=='调整' }}>调整</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -124,12 +122,14 @@
                                 <tr>
                                     <td>{{ transaction.transaction_date }}</td>
                                     <td>
-                                        {% if transaction.transaction_type == 'income' %}
-                                        <span class="badge bg-success">收入</span>
-                                        {% elif transaction.transaction_type == 'expense' %}
-                                        <span class="badge bg-danger">支出</span>
-                                        {% elif transaction.transaction_type == 'adjustment' %}
-                                        <span class="badge bg-warning">调整</span>
+                                        {% if transaction.transaction_type == '销售收入' %}
+                                        <span class="badge bg-success">销售收入</span>
+                                        {% elif transaction.transaction_type == '采购支出' %}
+                                        <span class="badge bg-danger">采购支出</span>
+                                        {% elif transaction.transaction_type == '采购退款' %}
+                                        <span class="badge bg-info text-dark">采购退款</span>
+                                        {% elif transaction.transaction_type == '调整' %}
+                                        <span class="badge bg-warning text-dark">调整</span>
                                         {% else %}
                                         <span class="badge bg-secondary">{{ transaction.transaction_type }}</span>
                                         {% endif %}
@@ -144,16 +144,20 @@
                                     <td>{{ transaction.counterpart or '-' }}</td>
                                     <td>
                                         <span class="fw-bold
-                                                {% if transaction.transaction_type == 'income' %}
+                                                {% if transaction.transaction_type == '销售收入' %}
                                                     text-success
-                                                {% elif transaction.transaction_type == 'expense' %}
+                                                {% elif transaction.transaction_type == '采购支出' %}
                                                     text-danger
-                                                {% else %}
+                                                {% elif transaction.transaction_type == '采购退款' %}
+                                                    text-info
+                                                {% elif transaction.transaction_type == '调整' %}
                                                     text-warning
+                                                {% else %}
+                                                    text-secondary
                                                 {% endif %}
                                             ">
-                                            {% if transaction.transaction_type == 'income' %}+{% elif
-                                            transaction.transaction_type == 'expense' %}-{% endif %}
+                                            {% if transaction.transaction_type == '销售收入' %}+{% elif transaction.transaction_type == '采购退款' %}+{% elif transaction.transaction_type == '采购支出' %}-{% elif transaction.transaction_type == '调整' %}
+                                            {% endif %}
                                             ¥{{ "%.2f"|format(transaction.amount) }}
                                         </span>
                                     </td>

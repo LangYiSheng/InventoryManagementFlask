@@ -430,13 +430,13 @@ def finance():
     today_income = conn.execute('''
         SELECT COALESCE(SUM(amount), 0) as total 
         FROM financial_transactions 
-        WHERE DATE(transaction_date) = ? AND transaction_type = 'income'
+        WHERE DATE(transaction_date) = ? AND transaction_type IN ('销售收入', '采购退款')
     ''', (today,)).fetchone()['total']
     
     today_expense = conn.execute('''
         SELECT COALESCE(SUM(amount), 0) as total 
         FROM financial_transactions 
-        WHERE DATE(transaction_date) = ? AND transaction_type = 'expense'
+        WHERE DATE(transaction_date) = ? AND transaction_type = '采购支出'
     ''', (today,)).fetchone()['total']
     
     stats = {
