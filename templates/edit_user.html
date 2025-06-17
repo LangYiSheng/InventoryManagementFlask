@@ -52,6 +52,10 @@
                                             ) else '' }}>商品管理</option>
                                         <option value="inventory" {{ 'selected' if 'inventory' in (user.permissions
                                             or '' ) else '' }}>库存管理</option>
+                                        <option value="suppliers" {{ 'selected' if 'suppliers' in (user.permissions
+                                            or '' ) else '' }}>供应商管理</option>
+                                        <option value="customers" {{ 'selected' if 'customers' in (user.permissions
+                                            or '' ) else '' }}>客户管理</option>
                                         <option value="purchases" {{ 'selected' if 'purchases' in (user.permissions
                                             or '' ) else '' }}>采购管理</option>
                                         <option value="sales" {{ 'selected' if 'sales' in (user.permissions or '' )
@@ -126,6 +130,14 @@
                             <div class="mb-3">
                                 <h6 class="text-primary">库存管理</h6>
                                 <small class="text-muted">可以查看库存状态和变动记录</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">供应商管理</h6>
+                                <small class="text-muted">可以添加、编辑、删除供应商信息</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">客户管理</h6>
+                                <small class="text-muted">可以添加、编辑、删除客户信息</small>
                             </div>
                             <div class="mb-3">
                                 <h6 class="text-primary">采购管理</h6>
