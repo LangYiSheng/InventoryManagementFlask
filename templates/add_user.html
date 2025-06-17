@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}新增用户{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>新增用户</h2>
+                <a href="{{ url_for('users') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回用户管理
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="POST">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="username" class="form-label">用户名 <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="username" name="username"
+                                                required placeholder="输入用户名">
+                                            <div class="form-text">用户名必须唯一，建议使用英文字母和数字</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label">密码 <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="password" class="form-control" id="password" name="password"
+                                                required placeholder="输入密码">
+                                            <div class="form-text">密码长度至少6位</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="confirm_password" class="form-label">确认密码 <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="password" class="form-control" id="confirm_password"
+                                                name="confirm_password" required placeholder="再次输入密码">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="role" class="form-label">角色 <span
+                                                    class="text-danger">*</span></label>
+                                            <select class="form-select" id="role" name="role" required>
+                                                <option value="">请选择角色</option>
+                                                <option value="user">普通用户</option>
+                                                <option value="manager">经理</option>
+                                                <option value="admin">管理员</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="permissions" class="form-label">权限设置</label>
+                                    <select class="form-select" id="permissions" name="permissions">
+                                        <option value="">无特殊权限</option>
+                                        <option value="all">全部权限</option>
+                                        <option value="products">商品管理</option>
+                                        <option value="inventory">库存管理</option>
+                                        <option value="purchases">采购管理</option>
+                                        <option value="sales">销售管理</option>
+                                        <option value="finance">财务管理</option>
+                                    </select>
+                                    <div class="form-text">管理员角色默认拥有全部权限</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active"
+                                            checked>
+                                        <label class="form-check-label" for="is_active">
+                                            启用用户
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>角色说明：</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li><strong>普通用户：</strong>基础操作权限，需要额外分配具体权限</li>
+                                        <li><strong>经理：</strong>部门管理权限，可以管理相关业务模块</li>
+                                        <li><strong>管理员：</strong>系统最高权限，可以管理所有功能</li>
+                                    </ul>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('users') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> 取消
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 创建用户
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">权限说明</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="text-primary">商品管理</h6>
+                                <small class="text-muted">可以添加、编辑、删除商品信息和分类</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">库存管理</h6>
+                                <small class="text-muted">可以查看库存状态和变动记录</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">采购管理</h6>
+                                <small class="text-muted">可以创建和管理采购单</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">销售管理</h6>
+                                <small class="text-muted">可以创建和管理销售单</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">财务管理</h6>
+                                <small class="text-muted">可以查看财务报表和进行余额调整</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirm_password');
+        const role = document.getElementById('role');
+        const permissions = document.getElementById('permissions');
+
+        // 密码确认验证
+        form.addEventListener('submit', function (e) {
+            if (password.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert('两次输入的密码不一致！');
+                confirmPassword.focus();
+                return false;
+            }
+
+            if (password.value.length < 6) {
+                e.preventDefault();
+                alert('密码长度至少6位！');
+                password.focus();
+                return false;
+            }
+        });
+
+        // 角色变更时自动设置权限
+        role.addEventListener('change', function () {
+            if (this.value === 'admin') {
+                permissions.value = 'all';
+                permissions.disabled = true;
+            } else {
+                permissions.disabled = false;
+                if (permissions.value === 'all') {
+                    permissions.value = '';
+                }
+            }
+        });
+
+        // 密码强度提示
+        password.addEventListener('input', function () {
+            const value = this.value;
+            let strength = 0;
+
+            if (value.length >= 6) strength++;
+            if (/[a-z]/.test(value)) strength++;
+            if (/[A-Z]/.test(value)) strength++;
+            if (/[0-9]/.test(value)) strength++;
+            if (/[^A-Za-z0-9]/.test(value)) strength++;
+
+            let strengthText = '';
+            let strengthClass = '';
+
+            if (strength < 2) {
+                strengthText = '弱';
+                strengthClass = 'text-danger';
+            } else if (strength < 4) {
+                strengthText = '中等';
+                strengthClass = 'text-warning';
+            } else {
+                strengthText = '强';
+                strengthClass = 'text-success';
+            }
+
+            let helpText = this.parentNode.querySelector('.form-text');
+            if (value.length > 0) {
+                helpText.innerHTML = `密码强度：<span class="${strengthClass}">${strengthText}</span>`;
+            } else {
+                helpText.textContent = '密码长度至少6位';
+            }
+        });
+    });
+</script>
+{% endblock %}

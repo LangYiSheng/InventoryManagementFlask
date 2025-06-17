@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}采购退货 - 进销存管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">采购退货 - {{ purchase.order_no }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('purchase.purchases') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回采购单列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">原采购单信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>采购单号：</strong>{{ purchase.order_no }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>供应商：</strong>{{ purchase.supplier_name }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>采购员：</strong>{{ purchase.purchaser or '无' }}
+                    </div>
+                    <div class="col-md-3">
+                        <strong>总金额：</strong>¥{{ "%.2f"|format(purchase.total_amount or 0) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">退货明细</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="return_reason" class="form-label">退货原因 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="return_reason" name="return_reason" rows="3" required placeholder="请输入退货原因..."></textarea>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 此操作将退货该采购单的所有商品
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>商品名称</th>
+                                    <th>规格</th>
+                                    <th>单位</th>
+                                    <th>采购数量</th>
+                                    <th>当前库存</th>
+                                    <th>单价</th>
+                                    <th>退货金额</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set total_amount = 0 %}
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item.product_name }}</td>
+                                    <td>{{ item.specification or '无' }}</td>
+                                    <td>{{ item.unit or '无' }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.current_stock or 0 }}</td>
+                                    <td>¥{{ "%.2f"|format(item.unit_price) }}</td>
+                                    <td>¥{{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
+                                    {% set total_amount = total_amount + (item.quantity * item.unit_price) %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-warning">
+                                    <th colspan="6" class="text-end">退货总金额：</th>
+                                    <th>¥{{ "%.2f"|format(total_amount) }}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    {% if not items %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">该采购单暂无明细</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-warning me-2">
+                            <i class="bi bi-arrow-return-left"></i> 确认退货
+                        </button>
+                        <a href="{{ url_for('purchase.view_purchase', id=purchase.id) }}" class="btn btn-secondary">
+                            取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

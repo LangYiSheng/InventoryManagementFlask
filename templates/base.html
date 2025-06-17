@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}进销存管理系统{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .sidebar .nav-link {
+            color: #495057;
+            padding: 0.75rem 1rem;
+            border-radius: 0;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .alert {
+            margin-bottom: 1rem;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .status-active {
+            color: #28a745;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+        }
+
+        .stock-warning {
+            color: #ffc107;
+        }
+
+        .stock-danger {
+            color: #dc3545;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    {% if session.user_id %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="bi bi-box-seam"></i> 进销存管理系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    欢迎，{{ session.username }}
+                </span>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="bi bi-box-arrow-right"></i> 退出
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2 p-0">
+                <div class="sidebar">
+                    <nav class="nav flex-column">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-house"></i> 首页
+                        </a>
+                        <hr class="my-2">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-1 text-muted">商品管理</h6>
+                        <a class="nav-link" href="{{ url_for('product.categories') }}">
+                            <i class="bi bi-tags"></i> 商品分类
+                        </a>
+                        <a class="nav-link" href="{{ url_for('product.products') }}">
+                            <i class="bi bi-box"></i> 商品列表
+                        </a>
+                        <hr class="my-2">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-1 text-muted">业务管理</h6>
+                        <a class="nav-link" href="{{ url_for('suppliers') }}">
+                            <i class="bi bi-truck"></i> 供应商管理
+                        </a>
+                        <a class="nav-link" href="{{ url_for('customers') }}">
+                            <i class="bi bi-people"></i> 客户管理
+                        </a>
+                        <hr class="my-2">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-1 text-muted">采购管理</h6>
+                        <a class="nav-link" href="{{ url_for('purchase.purchases') }}">
+                            <i class="bi bi-cart-plus"></i> 采购单管理
+                        </a>
+                        <a class="nav-link" href="{{ url_for('purchase.purchase_returns') }}">
+                            <i class="bi bi-arrow-return-left"></i> 采购退货单
+                        </a>
+                        <hr class="my-2">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-1 text-muted">销售管理</h6>
+                        <a class="nav-link" href="{{ url_for('sales.sales') }}">
+                            <i class="bi bi-cart-check"></i> 销售单管理
+                        </a>
+                        <a class="nav-link" href="#" onclick="alert('销售退货功能正在开发中')">
+                            <i class="bi bi-arrow-return-right"></i> 销售退货单
+                        </a>
+                        <hr class="my-2">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-1 text-muted">库存管理</h6>
+                        <a class="nav-link" href="{{ url_for('inventory') }}">
+                            <i class="bi bi-boxes"></i> 库存管理
+                        </a>
+                        <hr class="my-2">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-1 text-muted">财务管理</h6>
+                        <a class="nav-link" href="{{ url_for('finance') }}">
+                            <i class="bi bi-currency-dollar"></i> 财务管理
+                        </a>
+                        <hr class="my-2">
+                        <h6 class="sidebar-heading px-3 mt-2 mb-1 text-muted">系统管理</h6>
+                        <a class="nav-link" href="{{ url_for('users') }}">
+                            <i class="bi bi-person-gear"></i> 用户管理
+                        </a>
+                        <a class="nav-link" href="{{ url_for('profile') }}">
+                            <i class="bi bi-key"></i> 修改密码
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="main-content">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+                        role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    {% block login_content %}{% endblock %}
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

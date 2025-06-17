@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}个人资料{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>个人资料</h2>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回首页
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- 修改密码 -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">修改密码</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <div class="mb-3">
+                                    <label for="current_password" class="form-label">当前密码 <span
+                                            class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" id="current_password"
+                                        name="current_password" required placeholder="输入当前密码">
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="new_password" class="form-label">新密码 <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="password" class="form-control" id="new_password"
+                                                name="new_password" required placeholder="输入新密码">
+                                            <div class="form-text">密码长度至少6位</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="confirm_password" class="form-label">确认新密码 <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="password" class="form-control" id="confirm_password"
+                                                name="confirm_password" required placeholder="再次输入新密码">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>注意：</strong>修改密码后需要重新登录系统。
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> 修改密码
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- 用户信息 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">用户信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-user-circle fa-4x text-primary"></i>
+                            </div>
+
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>用户名：</strong></td>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>角色：</strong></td>
+                                    <td>
+                                        {% if user.role == 'admin' %}
+                                        <span class="badge bg-danger">管理员</span>
+                                        {% elif user.role == 'manager' %}
+                                        <span class="badge bg-warning">经理</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">普通用户</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>权限：</strong></td>
+                                    <td>
+                                        {% if user.permissions == 'all' %}
+                                        <span class="text-success">全部权限</span>
+                                        {% else %}
+                                        <span class="text-muted">{{ user.permissions or '无特殊权限' }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>状态：</strong></td>
+                                    <td>
+                                        {% if user.is_active %}
+                                        <span class="badge bg-success">启用</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">禁用</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>注册时间：</strong></td>
+                                    <td>{{ user.created_at if user.created_at else '-' }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 安全提示 -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">安全提示</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <i class="fas fa-shield-alt text-success me-2"></i>
+                                <small>定期更换密码</small>
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-lock text-warning me-2"></i>
+                                <small>使用强密码</small>
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-eye-slash text-info me-2"></i>
+                                <small>不要泄露账号信息</small>
+                            </div>
+                            <div class="mb-0">
+                                <i class="fas fa-sign-out-alt text-danger me-2"></i>
+                                <small>使用完毕及时退出</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const newPassword = document.getElementById('new_password');
+        const confirmPassword = document.getElementById('confirm_password');
+
+        // 表单提交验证
+        form.addEventListener('submit', function (e) {
+            if (newPassword.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert('两次输入的新密码不一致！');
+                confirmPassword.focus();
+                return false;
+            }
+
+            if (newPassword.value.length < 6) {
+                e.preventDefault();
+                alert('新密码长度至少6位！');
+                newPassword.focus();
+                return false;
+            }
+
+            if (!confirm('确定要修改密码吗？修改后需要重新登录。')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // 密码强度提示
+        newPassword.addEventListener('input', function () {
+            const value = this.value;
+            let strength = 0;
+
+            if (value.length >= 6) strength++;
+            if (/[a-z]/.test(value)) strength++;
+            if (/[A-Z]/.test(value)) strength++;
+            if (/[0-9]/.test(value)) strength++;
+            if (/[^A-Za-z0-9]/.test(value)) strength++;
+
+            let strengthText = '';
+            let strengthClass = '';
+
+            if (strength < 2) {
+                strengthText = '弱';
+                strengthClass = 'text-danger';
+            } else if (strength < 4) {
+                strengthText = '中等';
+                strengthClass = 'text-warning';
+            } else {
+                strengthText = '强';
+                strengthClass = 'text-success';
+            }
+
+            let helpText = this.parentNode.querySelector('.form-text');
+            if (value.length > 0) {
+                helpText.innerHTML = `密码强度：<span class="${strengthClass}">${strengthText}</span>`;
+            } else {
+                helpText.textContent = '密码长度至少6位';
+            }
+        });
+
+        // 确认密码实时验证
+        confirmPassword.addEventListener('input', function () {
+            if (this.value && this.value !== newPassword.value) {
+                this.setCustomValidity('密码不一致');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    });
+</script>
+{% endblock %}

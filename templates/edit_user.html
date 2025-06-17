@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}编辑用户{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>编辑用户</h2>
+                <a href="{{ url_for('users') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回用户管理
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="POST">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="username" class="form-label">用户名 <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="username" name="username"
+                                                required placeholder="输入用户名" value="{{ user.username }}">
+                                            <div class="form-text">用户名必须唯一，建议使用英文字母和数字</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="role" class="form-label">角色 <span
+                                                    class="text-danger">*</span></label>
+                                            <select class="form-select" id="role" name="role" required>
+                                                <option value="">请选择角色</option>
+                                                <option value="user" {{ 'selected' if user.role=='user' else '' }}>普通用户
+                                                </option>
+                                                <option value="manager" {{ 'selected' if user.role=='manager' else ''
+                                                    }}>经理</option>
+                                                <option value="admin" {{ 'selected' if user.role=='admin' else '' }}>管理员
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="permissions" class="form-label">权限设置</label>
+                                    <select class="form-select" id="permissions" name="permissions" multiple>
+                                        <option value="products" {{ 'selected' if 'products' in (user.permissions or ''
+                                            ) else '' }}>商品管理</option>
+                                        <option value="inventory" {{ 'selected' if 'inventory' in (user.permissions
+                                            or '' ) else '' }}>库存管理</option>
+                                        <option value="purchases" {{ 'selected' if 'purchases' in (user.permissions
+                                            or '' ) else '' }}>采购管理</option>
+                                        <option value="sales" {{ 'selected' if 'sales' in (user.permissions or '' )
+                                            else '' }}>销售管理</option>
+                                        <option value="finance" {{ 'selected' if 'finance' in (user.permissions or '' )
+                                            else '' }}>财务管理</option>
+                                        <option value="users" {{ 'selected' if 'users' in (user.permissions or '' )
+                                            else '' }}>用户管理</option>
+                                    </select>
+                                    <div class="form-text">按住 Ctrl 键可以选择多个权限。管理员角色默认拥有全部权限</div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>角色说明：</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li><strong>普通用户：</strong>基础操作权限，需要额外分配具体权限</li>
+                                        <li><strong>经理：</strong>部门管理权限，可以管理相关业务模块</li>
+                                        <li><strong>管理员：</strong>系统最高权限，可以管理所有功能</li>
+                                    </ul>
+                                </div>
+
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>注意：</strong>如需修改密码，请联系系统管理员或使用密码重置功能。
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('users') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> 取消
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 更新用户
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">用户信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="text-primary">用户ID</h6>
+                                <small class="text-muted">{{ user.id }}</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">创建时间</h6>
+                                <small class="text-muted">{{ user.created_at if user.created_at else '未知' }}</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">当前权限</h6>
+                                <small class="text-muted">{{ user.permissions if user.permissions else '无特殊权限'
+                                    }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">权限说明</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="text-primary">商品管理</h6>
+                                <small class="text-muted">可以添加、编辑、删除商品信息和分类</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">库存管理</h6>
+                                <small class="text-muted">可以查看库存状态和变动记录</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">采购管理</h6>
+                                <small class="text-muted">可以创建和管理采购单</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">销售管理</h6>
+                                <small class="text-muted">可以创建和管理销售单</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">财务管理</h6>
+                                <small class="text-muted">可以查看财务报表和进行余额调整</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-primary">用户管理</h6>
+                                <small class="text-muted">可以管理系统用户和权限</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const role = document.getElementById('role');
+        const permissions = document.getElementById('permissions');
+
+        // 角色变更时的权限处理
+        role.addEventListener('change', function () {
+            if (this.value === 'admin') {
+                // 管理员自动选择所有权限
+                for (let option of permissions.options) {
+                    option.selected = true;
+                }
+                permissions.disabled = true;
+            } else {
+                permissions.disabled = false;
+            }
+        });
+
+        // 初始化时检查角色
+        if (role.value === 'admin') {
+            permissions.disabled = true;
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}编辑商品 - 进销存管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">编辑商品</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('product.products') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">商品名称 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ product.name }}"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="category_id" class="form-label">商品分类 <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="category_id" name="category_id" required>
+                                    <option value="">请选择分类</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if category.id==product.category_id
+                                        %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="specification" class="form-label">规格 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="specification" name="specification"
+                                    value="{{ product.specification or '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="unit" class="form-label">单位 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="unit" name="unit" value="{{ product.unit }}"
+                                    required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="purchase_price" class="form-label">建议进价 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="purchase_price"
+                                    name="purchase_price" step="0.01" min="0"
+                                    value="{{ product.purchase_price or '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sale_price" class="form-label">建议售价 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="sale_price"
+                                    name="sale_price" step="0.01" min="0"
+                                    value="{{ product.sale_price or '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="min_stock" class="form-label">库存下限 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="min_stock" name="min_stock" step="0.01"
+                                    min="0" value="{{ product.min_stock or '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="max_stock" class="form-label">库存上限 <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="max_stock" name="max_stock" step="0.01"
+                                    min="0" value="{{ product.max_stock or '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">备注</label>
+                        <textarea class="form-control" id="notes" name="notes"
+                            rows="3">{{ product.notes or '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if
+                                product.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                启用商品
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('product.products') }}" class="btn btn-secondary">
+                            <i class="bi bi-x"></i> 取消
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> 保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">商品信息</h6>
+            </div>
+            <div class="card-body">
+                <p><strong>商品ID：</strong>{{ product.id }}</p>
+                <p><strong>当前库存：</strong>{{ product.stock_quantity }} {{ product.unit }}</p>
+                <p><strong>创建时间：</strong>{{ product.created_at }}</p>
+                <p><strong>更新时间：</strong>{{ product.updated_at }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

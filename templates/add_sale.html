@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}新增销售单{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>新增销售单</h2>
+                <a href="{{ url_for('sales.sales') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回销售管理
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="customer_id" class="form-label">客户 <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="customer_id" name="customer_id" required>
+                                        <option value="">请选择客户</option>
+                                        {% for customer in customers %}
+                                        <option value="{{ customer.id }}">{{ customer.name }} - {{ customer.contact_person or '无联系人' }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="notes" class="form-label">备注</label>
+                                    <input type="text" class="form-control" id="notes" name="notes" placeholder="可选">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">销售明细</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="items-container">
+                                    <div class="item-row row mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">商品 <span class="text-danger">*</span></label>
+                                            <select class="form-select product-select" name="product_ids[]" required>
+                                                <option value="">请选择商品</option>
+                                                {% for product in products %}
+                                                <option value="{{ product.id }}" 
+                                                        data-price="{{ product.suggested_sale_price or 0 }}"
+                                                        data-stock="{{ product.current_stock or 0 }}"
+                                                        data-unit="{{ product.unit or '个' }}">
+                                                    {{ product.name }} ({{ product.specification or '无规格' }}) - 库存: {{ product.current_stock or 0 }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">数量 <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control quantity-input" name="quantities[]" min="1" step="1" required>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">单价 <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control price-input" name="prices[]" min="0" step="0.01" required>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">金额</label>
+                                            <input type="text" class="form-control amount-display" readonly>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">&nbsp;</label>
+                                            <div>
+                                                <button type="button" class="btn btn-outline-danger btn-sm remove-item" style="display: none;">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="add-item">
+                                    <i class="fas fa-plus"></i> 添加商品
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6>总金额: <span id="total-amount" class="text-primary">¥0.00</span></h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check-circle"></i> 保存销售单
+                            </button>
+                            <a href="{{ url_for('sales.sales') }}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-x-circle"></i> 取消
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsContainer = document.getElementById('items-container');
+    const addItemBtn = document.getElementById('add-item');
+    const totalAmountSpan = document.getElementById('total-amount');
+
+    // 添加商品行
+    addItemBtn.addEventListener('click', function() {
+        const firstRow = itemsContainer.querySelector('.item-row');
+        const newRow = firstRow.cloneNode(true);
+        
+        // 清空新行的值
+        newRow.querySelectorAll('input, select').forEach(input => {
+            if (input.type === 'number' || input.tagName === 'SELECT') {
+                input.value = '';
+            }
+        });
+        
+        // 显示删除按钮
+        newRow.querySelector('.remove-item').style.display = 'inline-block';
+        
+        itemsContainer.appendChild(newRow);
+        updateRemoveButtons();
+        bindRowEvents(newRow);
+    });
+
+    // 更新删除按钮显示
+    function updateRemoveButtons() {
+        const rows = itemsContainer.querySelectorAll('.item-row');
+        rows.forEach((row, index) => {
+            const removeBtn = row.querySelector('.remove-item');
+            if (rows.length > 1) {
+                removeBtn.style.display = 'inline-block';
+            } else {
+                removeBtn.style.display = 'none';
+            }
+        });
+    }
+
+    // 绑定行事件
+    function bindRowEvents(row) {
+        const productSelect = row.querySelector('.product-select');
+        const quantityInput = row.querySelector('.quantity-input');
+        const priceInput = row.querySelector('.price-input');
+        const amountDisplay = row.querySelector('.amount-display');
+        const removeBtn = row.querySelector('.remove-item');
+
+        // 商品选择事件
+        productSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                const suggestedPrice = selectedOption.dataset.price;
+                const stock = selectedOption.dataset.stock;
+                
+                if (suggestedPrice && parseFloat(suggestedPrice) > 0) {
+                    priceInput.value = suggestedPrice;
+                }
+                
+                quantityInput.max = stock;
+                calculateAmount();
+            }
+        });
+
+        // 数量和单价变化事件
+        quantityInput.addEventListener('input', calculateAmount);
+        priceInput.addEventListener('input', calculateAmount);
+
+        // 删除行事件
+        removeBtn.addEventListener('click', function() {
+            row.remove();
+            updateRemoveButtons();
+            calculateTotal();
+        });
+
+        function calculateAmount() {
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const amount = quantity * price;
+            amountDisplay.value = '¥' + amount.toFixed(2);
+            calculateTotal();
+        }
+    }
+
+    // 计算总金额
+    function calculateTotal() {
+        let total = 0;
+        itemsContainer.querySelectorAll('.item-row').forEach(row => {
+            const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            total += quantity * price;
+        });
+        totalAmountSpan.textContent = '¥' + total.toFixed(2);
+    }
+
+    // 初始化第一行事件
+    bindRowEvents(itemsContainer.querySelector('.item-row'));
+    updateRemoveButtons();
+});
+</script>
+{% endblock %}

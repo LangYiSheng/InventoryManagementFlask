@@ -1,0 +1,5 @@
+/.idea
+/.venv
+/app_old.py
+/inventory_system.db
+/__pycache__

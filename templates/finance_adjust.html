@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}余额调整{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>余额调整</h2>
+                <a href="{{ url_for('finance') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回财务管理
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- 余额调整表单 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">余额调整</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="adjustment_type" class="form-label">调整类型 <span
+                                                    class="text-danger">*</span></label>
+                                            <select class="form-select" id="adjustment_type" name="adjustment_type"
+                                                required>
+                                                <option value="">请选择调整类型</option>
+                                                <option value="deposit">充值</option>
+                                                <option value="withdraw">提现</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="amount" class="form-label">调整金额 <span
+                                                    class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">¥</span>
+                                                <input type="number" class="form-control" id="amount" name="amount"
+                                                    min="0.01" step="0.01" required placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reason" class="form-label">调整原因 <span
+                                            class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="reason" name="reason" rows="3" required
+                                        placeholder="请输入调整原因"></textarea>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <strong>操作说明：</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li><strong>充值：</strong>增加系统余额，用于资金注入</li>
+                                        <li><strong>提现：</strong>减少系统余额，用于资金提取</li>
+                                        <li>所有调整操作都会记录在财务交易记录中</li>
+                                    </ul>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('finance') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> 取消
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 确认调整
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- 当前余额信息 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">当前余额信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <i class="fas fa-wallet fa-3x text-primary mb-3"></i>
+                                <h3 class="text-primary">¥{{ "%.2f"|format(balance.balance) }}</h3>
+                                <p class="text-muted mb-0">系统当前余额</p>
+                                <hr>
+                                <small class="text-muted">
+                                    最后更新：{{ balance.updated_at }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 最近调整记录 -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">最近调整记录</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_adjustments %}
+                            {% for adjustment in recent_adjustments %}
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                <div>
+                                    <small class="text-muted">{{ adjustment.transaction_date }}</small>
+                                    <br>
+                                    <span class="fw-bold
+                                            {% if adjustment.amount > 0 %}
+                                                text-success
+                                            {% else %}
+                                                text-danger
+                                            {% endif %}
+                                        ">
+                                        {% if adjustment.amount > 0 %}+{% endif %}¥{{ "%.2f"|format(adjustment.amount)
+                                        }}
+                                    </span>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">{{ adjustment.operator or '-' }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="text-center text-muted">
+                                <i class="fas fa-history fa-2x mb-2"></i>
+                                <p class="mb-0">暂无调整记录</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if recent_adjustments %}
+                        <div class="card-footer text-center">
+                            <a href="{{ url_for('finance') }}" class="btn btn-sm btn-outline-primary">
+                                查看全部记录
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const adjustmentType = document.getElementById('adjustment_type');
+        const amountInput = document.getElementById('amount');
+        const form = document.querySelector('form');
+
+        form.addEventListener('submit', function (e) {
+            const type = adjustmentType.value;
+            const amount = parseFloat(amountInput.value);
+
+            if (type === 'withdraw') {
+                const currentBalance = {{ balance.balance }};
+            }
+            if (amount > currentBalance) {
+                e.preventDefault();
+                alert('提现金额不能超过当前余额！');
+                return false;
+            }
+        }
+        
+        const confirmMessage = type === 'deposit'
+            ? `确认充值 ¥${amount.toFixed(2)} 吗？`
+            : `确认提现 ¥${amount.toFixed(2)} 吗？`;
+
+        if (!confirm(confirmMessage)) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

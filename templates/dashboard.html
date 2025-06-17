@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 进销存管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">系统首页</h1>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <i class="bi bi-box fs-1"></i>
+                <h4>{{ stats.total_products }}</h4>
+                <p class="card-text">商品总数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <i class="bi bi-truck fs-1"></i>
+                <h4>{{ stats.total_suppliers }}</h4>
+                <p class="card-text">供应商</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <i class="bi bi-people fs-1"></i>
+                <h4>{{ stats.total_customers }}</h4>
+                <p class="card-text">客户</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <i class="bi bi-exclamation-triangle fs-1"></i>
+                <h4>{{ stats.low_stock_products }}</h4>
+                <p class="card-text">库存预警</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 库存预警 -->
+<div class="row">
+    {% if low_stock_products %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5><i class="bi bi-exclamation-triangle"></i> 库存不足预警</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>商品名称</th>
+                                <th>当前库存</th>
+                                <th>最低库存</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in low_stock_products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td class="text-danger">{{ product.stock_quantity }}</td>
+                                <td>{{ product.min_stock }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if high_stock_products %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5><i class="bi bi-exclamation-circle"></i> 库存过多预警</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>商品名称</th>
+                                <th>当前库存</th>
+                                <th>最高库存</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in high_stock_products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td class="text-warning">{{ product.stock_quantity }}</td>
+                                <td>{{ product.max_stock }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not low_stock_products and not high_stock_products %}
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5><i class="bi bi-check-circle"></i> 库存状态</h5>
+            </div>
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                <h4 class="mt-3">库存状态正常</h4>
+                <p class="text-muted">所有商品库存均在正常范围内</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

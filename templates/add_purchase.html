@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}新增采购单 - 进销存管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">新增采购单</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('purchase.purchases') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="supplier_id" class="form-label">供应商 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="supplier_id" name="supplier_id" required>
+                            <option value="">请选择供应商</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">备注</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('purchase.purchases') }}" class="btn btn-secondary">
+                            <i class="bi bi-x"></i> 取消
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> 创建并编辑明细
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">说明</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">1. 选择供应商后点击"创建并编辑明细"</p>
+                <p class="text-muted small mb-2">2. 在编辑页面添加采购商品明细</p>
+                <p class="text-muted small mb-0">3. 保存后将自动更新库存和财务记录</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

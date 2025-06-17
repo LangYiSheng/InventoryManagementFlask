@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}查看客户 - 进销存管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">查看客户</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('edit_customer', id=customer.id) }}" class="btn btn-primary me-2">
+            <i class="bi bi-pencil"></i> 编辑
+        </a>
+        <a href="{{ url_for('customers') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">客户信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">客户名称</label>
+                            <p class="form-control-plaintext">{{ customer.name }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">联系人</label>
+                            <p class="form-control-plaintext">{{ customer.contact_person or '无' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">联系电话</label>
+                            <p class="form-control-plaintext">{{ customer.phone or '无' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">邮箱</label>
+                            <p class="form-control-plaintext">{{ customer.email or '无' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">地址</label>
+                    <p class="form-control-plaintext">{{ customer.address or '无' }}</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">备注</label>
+                    <p class="form-control-plaintext">{{ customer.notes or '无' }}</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">创建时间</label>
+                            <p class="form-control-plaintext">{{ customer.created_at }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">状态</label>
+                            <p class="form-control-plaintext">
+                                {% if customer.status == 'active' %}
+                                    <span class="badge bg-success">启用</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">禁用</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">快速操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('sales.add_sale') }}?customer_id={{ customer.id }}" class="btn btn-outline-primary">
+                        <i class="bi bi-plus-circle"></i> 新建销售单
+                    </a>
+                    <a href="{{ url_for('sales.sales') }}?customer_id={{ customer.id }}" class="btn btn-outline-info">
+                        <i class="bi bi-list-ul"></i> 查看销售记录
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">统计信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-12">
+                        <div class="border-bottom pb-2 mb-2">
+                            <h6 class="text-muted mb-1">销售订单数</h6>
+                            <h4 class="mb-0">{{ sales_count or 0 }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <h6 class="text-muted mb-1">销售总金额</h6>
+                        <h4 class="mb-0 text-success">¥{{ "%.2f"|format(total_amount or 0) }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

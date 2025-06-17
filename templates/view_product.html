@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}查看商品 - 进销存管理系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">查看商品</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('product.edit_product', id=product.id) }}" class="btn btn-primary me-2">
+            <i class="bi bi-pencil"></i> 编辑
+        </a>
+        <a href="{{ url_for('product.products') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">商品信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">商品名称</label>
+                            <p class="form-control-plaintext">{{ product.name }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">商品分类</label>
+                            <p class="form-control-plaintext">{{ product.category_name or '未分类' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">规格</label>
+                            <p class="form-control-plaintext">{{ product.specification or '无' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">单位</label>
+                            <p class="form-control-plaintext">{{ product.unit or '无' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">采购价格</label>
+                            <p class="form-control-plaintext">¥{{ "%.2f"|format(product.purchase_price or 0) }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">销售价格</label>
+                            <p class="form-control-plaintext">¥{{ "%.2f"|format(product.sale_price or 0) }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">当前库存</label>
+                            <p class="form-control-plaintext">{{ product.stock_quantity or 0 }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">安全库存</label>
+                            <p class="form-control-plaintext">{{ product.safety_stock or 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">备注</label>
+                    <p class="form-control-plaintext">{{ product.remark or '无' }}</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">创建时间</label>
+                            <p class="form-control-plaintext">{{ product.created_at }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">状态</label>
+                            <p class="form-control-plaintext">
+                                {% if product.status == 'active' %}
+                                    <span class="badge bg-success">启用</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">禁用</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">库存状态</h5>
+            </div>
+            <div class="card-body">
+                {% set stock = product.stock_quantity or 0 %}
+                {% set safety = product.safety_stock or 0 %}
+                {% if stock <= 0 %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> 库存不足
+                    </div>
+                {% elif stock <= safety %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-circle"></i> 库存预警
+                    </div>
+                {% else %}
+                    <div class="alert alert-success" role="alert">
+                        <i class="bi bi-check-circle"></i> 库存正常
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
