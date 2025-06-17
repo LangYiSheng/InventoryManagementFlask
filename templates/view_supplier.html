@@ -73,7 +73,7 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">状态</label>
                             <p class="form-control-plaintext">
-                                {% if supplier.status == 'active' %}
+                                {% if supplier.is_active %}
                                     <span class="badge bg-success">启用</span>
                                 {% else %}
                                     <span class="badge bg-secondary">禁用</span>

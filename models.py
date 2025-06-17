@@ -49,6 +49,7 @@ def init_db():
             unit VARCHAR(20),
             purchase_price DECIMAL(10,2),
             sale_price DECIMAL(10,2),
+            suggested_sale_price DECIMAL(10,2),
             stock_quantity INTEGER DEFAULT 0,
             min_stock INTEGER DEFAULT 0,
             max_stock INTEGER DEFAULT 1000,
@@ -125,6 +126,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             original_order_id INTEGER NOT NULL,
             return_reason TEXT,
+            total_return_amount DECIMAL(10,2) DEFAULT 0,
             return_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (original_order_id) REFERENCES purchase_orders (id)
         )
@@ -152,7 +154,6 @@ def init_db():
             customer_id INTEGER NOT NULL,
             total_amount DECIMAL(10,2) DEFAULT 0,
             salesperson VARCHAR(100),
-            status VARCHAR(20) DEFAULT 'completed',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (customer_id) REFERENCES customers (id)
         )
@@ -177,7 +178,10 @@ def init_db():
         CREATE TABLE IF NOT EXISTS sales_returns (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             original_order_id INTEGER NOT NULL,
+            original_order_no VARCHAR(50),
+            customer_name VARCHAR(200),
             return_reason TEXT,
+            total_return_amount DECIMAL(10,2) DEFAULT 0,
             return_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (original_order_id) REFERENCES sales_orders (id)
         )
@@ -191,6 +195,7 @@ def init_db():
             product_id INTEGER NOT NULL,
             quantity DECIMAL(10,2) NOT NULL,
             unit_price DECIMAL(10,2) NOT NULL,
+            amount DECIMAL(10,2) NOT NULL,
             FOREIGN KEY (return_id) REFERENCES sales_returns (id),
             FOREIGN KEY (product_id) REFERENCES products (id)
         )
@@ -236,12 +241,19 @@ def init_db():
     ''')
     
     # 插入默认管理员用户
-    admin_password = generate_password_hash('admin123')
+    admin_password = generate_password_hash('admin')
     conn.execute('INSERT OR IGNORE INTO users (username, password_hash, role, permissions) VALUES (?, ?, ?, ?)',
                 ('admin', admin_password, 'admin', 'all'))
     
     # 插入默认系统余额记录
     conn.execute('INSERT OR IGNORE INTO system_balance (id, balance) VALUES (1, 0)')
+    
+    # 为现有数据库添加suggested_sale_price字段（如果不存在）
+    try:
+        conn.execute('ALTER TABLE products ADD COLUMN suggested_sale_price DECIMAL(10,2)')
+    except Exception:
+        # 字段已存在，忽略错误
+        pass
     
     conn.commit()
     conn.close()

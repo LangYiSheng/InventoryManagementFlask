@@ -27,9 +27,58 @@
                         </select>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">采购商品明细 <span class="text-danger">*</span></label>
+                        <div id="product-items">
+                            <div class="product-item border rounded p-3 mb-3">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">商品</label>
+                                        <select class="form-select" name="product_id[]" required>
+                                            <option value="">请选择商品</option>
+                                            {% for product in products %}
+                                            <option value="{{ product.id }}" data-price="{{ product.purchase_price or 0 }}">{{ product.name }} ({{ product.specification or '无规格' }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">数量</label>
+                                        <input type="number" class="form-control" name="quantity[]" step="0.01" min="0.01" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">单价</label>
+                                        <input type="number" class="form-control" name="unit_price[]" step="0.01" min="0" required>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">金额</label>
+                                        <input type="text" class="form-control amount-display" readonly>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="button" class="btn btn-outline-danger w-100 remove-item">删除</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" id="add-item">
+                            <i class="bi bi-plus"></i> 添加商品
+                        </button>
+                    </div>
+
                     <div class="mb-3">
                         <label for="notes" class="form-label">备注</label>
                         <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">采购总金额</h6>
+                                    <h4 class="text-primary" id="total-amount">¥0.00</h4>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -37,7 +86,7 @@
                             <i class="bi bi-x"></i> 取消
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check"></i> 创建并编辑明细
+                            <i class="bi bi-check"></i> 创建采购单
                         </button>
                     </div>
                 </form>
@@ -58,4 +107,79 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productItems = document.getElementById('product-items');
+    const addItemBtn = document.getElementById('add-item');
+    const totalAmountDisplay = document.getElementById('total-amount');
+
+    // 添加商品行
+    addItemBtn.addEventListener('click', function() {
+        const newItem = document.querySelector('.product-item').cloneNode(true);
+        // 清空新行的值
+        newItem.querySelectorAll('select, input').forEach(input => {
+            if (input.type !== 'button') {
+                input.value = '';
+            }
+        });
+        productItems.appendChild(newItem);
+        updateEventListeners();
+    });
+
+    // 更新事件监听器
+    function updateEventListeners() {
+        // 删除按钮事件
+        document.querySelectorAll('.remove-item').forEach(btn => {
+            btn.onclick = function() {
+                if (document.querySelectorAll('.product-item').length > 1) {
+                    this.closest('.product-item').remove();
+                    calculateTotal();
+                }
+            };
+        });
+
+        // 商品选择事件
+        document.querySelectorAll('select[name="product_id[]"]').forEach(select => {
+            select.onchange = function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const price = selectedOption.getAttribute('data-price') || 0;
+                const priceInput = this.closest('.product-item').querySelector('input[name="unit_price[]"]');
+                priceInput.value = price;
+                calculateRowAmount(this.closest('.product-item'));
+            };
+        });
+
+        // 数量和单价变化事件
+        document.querySelectorAll('input[name="quantity[]"], input[name="unit_price[]"]').forEach(input => {
+            input.oninput = function() {
+                calculateRowAmount(this.closest('.product-item'));
+            };
+        });
+    }
+
+    // 计算单行金额
+    function calculateRowAmount(row) {
+        const quantity = parseFloat(row.querySelector('input[name="quantity[]"]').value) || 0;
+        const unitPrice = parseFloat(row.querySelector('input[name="unit_price[]"]').value) || 0;
+        const amount = quantity * unitPrice;
+        row.querySelector('.amount-display').value = '¥' + amount.toFixed(2);
+        calculateTotal();
+    }
+
+    // 计算总金额
+    function calculateTotal() {
+        let total = 0;
+        document.querySelectorAll('.product-item').forEach(row => {
+            const quantity = parseFloat(row.querySelector('input[name="quantity[]"]').value) || 0;
+            const unitPrice = parseFloat(row.querySelector('input[name="unit_price[]"]').value) || 0;
+            total += quantity * unitPrice;
+        });
+        totalAmountDisplay.textContent = '¥' + total.toFixed(2);
+    }
+
+    // 初始化事件监听器
+    updateEventListeners();
+});
+</script>
 {% endblock %}

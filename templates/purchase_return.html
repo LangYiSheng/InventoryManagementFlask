@@ -44,7 +44,8 @@
                 <form method="POST">
                     <div class="mb-3">
                         <label for="return_reason" class="form-label">退货原因 <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="return_reason" name="return_reason" rows="3" required placeholder="请输入退货原因..."></textarea>
+                        <textarea class="form-control" id="return_reason" name="return_reason" rows="3" required
+                            placeholder="请输入退货原因..."></textarea>
                     </div>
 
                     <div class="alert alert-info">
@@ -65,7 +66,6 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% set total_amount = 0 %}
                                 {% for item in items %}
                                 <tr>
                                     <td>{{ item.product_name }}</td>
@@ -75,14 +75,13 @@
                                     <td>{{ item.current_stock or 0 }}</td>
                                     <td>¥{{ "%.2f"|format(item.unit_price) }}</td>
                                     <td>¥{{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
-                                    {% set total_amount = total_amount + (item.quantity * item.unit_price) %}
                                 </tr>
                                 {% endfor %}
                             </tbody>
                             <tfoot>
                                 <tr class="table-warning">
                                     <th colspan="6" class="text-end">退货总金额：</th>
-                                    <th>¥{{ "%.2f"|format(total_amount) }}</th>
+                                    <th>¥{{ "%.2f"|format(purchase.total_amount or 0) }}</th>
                                 </tr>
                             </tfoot>
                         </table>

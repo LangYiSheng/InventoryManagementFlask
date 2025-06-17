@@ -1,121 +1,127 @@
 {% extends "base.html" %}
 
-{% block title %}销售退货 - 库存管理系统{% endblock %}
+{% block title %}销售退货{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">销售退货</h5>
-                    <a href="{{ url_for('sales.sales') }}" class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-arrow-left"></i> 返回销售列表
-                    </a>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>销售退货</h2>
+                <a href="{{ url_for('sales.view_sale', id=sale.id) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> 返回销售单详情
+                </a>
+            </div>
+
+            <!-- 销售单基本信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">原销售单信息</h5>
                 </div>
                 <div class="card-body">
-                    <!-- 销售单信息 -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <h6>销售单信息</h6>
-                            <p><strong>单号：</strong>{{ sale.order_no }}</p>
-                            <p><strong>客户：</strong>{{ sale.customer_name or '散客' }}</p>
-                            <p><strong>销售日期：</strong>{{ sale.order_date }}</p>
-                            <p><strong>总金额：</strong>¥{{ "%.2f"|format(sale.total_amount) }}</p>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>销售单号：</strong>{{ sale.order_no }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>客户：</strong>{{ sale.customer_name }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>销售员：</strong>{{ sale.salesperson or '无' }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>总金额：</strong><span class="text-primary">¥{{ "%.2f"|format(sale.total_amount)
+                                }}</span>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- 退货表单 -->
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="return_reason" class="form-label">退货原因 <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="return_reason" name="return_reason" rows="3" required placeholder="请输入退货原因"></textarea>
-                        </div>
-
-                        <!-- 商品明细 -->
-                        <h6>选择退货商品</h6>
+            <!-- 退货表单 -->
+            <form method="POST">
+                <!-- 退货商品明细 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">退货商品明细</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if items %}
                         <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead class="table-light">
+                            <table class="table table-striped">
+                                <thead>
                                     <tr>
-                                        <th width="50">
-                                            <input type="checkbox" id="selectAll" onchange="toggleAll(this)">
-                                        </th>
                                         <th>商品名称</th>
                                         <th>销售数量</th>
                                         <th>单价</th>
-                                        <th>金额</th>
-                                        <th>当前库存</th>
-                                        <th>退货数量</th>
+                                        <th>退货金额</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for item in items %}
                                     <tr>
-                                        <td>
-                                            <input type="checkbox" name="selected_items" value="{{ item.product_id }}" onchange="toggleRow(this)">
-                                        </td>
                                         <td>{{ item.product_name }}</td>
                                         <td>{{ item.quantity }}</td>
                                         <td>¥{{ "%.2f"|format(item.unit_price) }}</td>
                                         <td>¥{{ "%.2f"|format(item.amount) }}</td>
-                                        <td>{{ item.current_stock }}</td>
-                                        <td>
-                                            <input type="number" class="form-control" name="return_quantities"
-                                                   min="0" max="{{ item.quantity }}" step="0.01" value="0"
-                                                   style="width: 100px;" disabled>
-                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
+                                <tfoot>
+                                    <tr class="table-warning">
+                                        <th colspan="3" class="text-end">退货总金额：</th>
+                                        <th>¥{{ "%.2f"|format(sale.total_amount) }}</th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ url_for('sales.sales') }}" class="btn btn-secondary">取消</a>
-                            <button type="submit" class="btn btn-warning">确认退货</button>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">该销售单暂无明细</p>
                         </div>
-                    </form>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
+
+                <!-- 退货原因 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">退货信息</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="return_reason" class="form-label">退货原因 <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control" id="return_reason" name="return_reason" rows="3"
+                                placeholder="请详细说明退货原因..." required></textarea>
+                        </div>
+
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>注意：</strong>确认退货后将：
+                            <ul class="mb-0 mt-2">
+                                <li>恢复所有商品的库存数量</li>
+                                <li>记录退款财务交易</li>
+                                <li>此操作不可撤销</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                {% if items %}
+                <div class="d-flex justify-content-end mt-3">
+                    <button type="submit" class="btn btn-warning me-2"
+                        onclick="return confirm('确定要退货这个销售单吗？此操作将恢复库存并记录退款，且不可撤销！')">
+                        <i class="bi bi-arrow-return-left"></i> 确认退货
+                    </button>
+                    <a href="{{ url_for('sales.view_sale', id=sale.id) }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> 取消
+                    </a>
+                </div>
+                {% endif %}
+            </form>
         </div>
     </div>
 </div>
-
-<script>
-function toggleAll(source) {
-    const checkboxes = document.querySelectorAll('input[name="selected_items"]');
-    const quantityInputs = document.querySelectorAll('input[name="return_quantities"]');
-    
-    checkboxes.forEach((checkbox, index) => {
-        checkbox.checked = source.checked;
-        quantityInputs[index].disabled = !source.checked;
-        if (source.checked) {
-            quantityInputs[index].value = quantityInputs[index].max;
-        } else {
-            quantityInputs[index].value = 0;
-        }
-    });
-}
-
-function toggleRow(checkbox) {
-    const row = checkbox.closest('tr');
-    const quantityInput = row.querySelector('input[name="return_quantities"]');
-    
-    quantityInput.disabled = !checkbox.checked;
-    if (checkbox.checked) {
-        quantityInput.value = quantityInput.max;
-    } else {
-        quantityInput.value = 0;
-    }
-    
-    // 更新全选状态
-    const allCheckboxes = document.querySelectorAll('input[name="selected_items"]');
-    const checkedBoxes = document.querySelectorAll('input[name="selected_items"]:checked');
-    const selectAllCheckbox = document.getElementById('selectAll');
-    
-    selectAllCheckbox.checked = allCheckboxes.length === checkedBoxes.length;
-    selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < allCheckboxes.length;
-}
-</script>
 {% endblock %}

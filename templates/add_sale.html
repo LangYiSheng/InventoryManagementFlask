@@ -45,11 +45,11 @@
                                     <div class="item-row row mb-3">
                                         <div class="col-md-4">
                                             <label class="form-label">商品 <span class="text-danger">*</span></label>
-                                            <select class="form-select product-select" name="product_ids[]" required>
+                                            <select class="form-select product-select" name="product_id[]" required>
                                                 <option value="">请选择商品</option>
                                                 {% for product in products %}
                                                 <option value="{{ product.id }}" 
-                                                        data-price="{{ product.suggested_sale_price or 0 }}"
+                                                        data-price="{{ product.sale_price or 0 }}"
                                                         data-stock="{{ product.current_stock or 0 }}"
                                                         data-unit="{{ product.unit or '个' }}">
                                                     {{ product.name }} ({{ product.specification or '无规格' }}) - 库存: {{ product.current_stock or 0 }}
@@ -59,11 +59,11 @@
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label">数量 <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control quantity-input" name="quantities[]" min="1" step="1" required>
+                                            <input type="number" class="form-control quantity-input" name="quantity[]" min="1" step="1" required>
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label">单价 <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control price-input" name="prices[]" min="0" step="0.01" required>
+                                            <input type="number" class="form-control price-input" name="unit_price[]" min="0" step="0.01" required>
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label">金额</label>

@@ -83,14 +83,14 @@
                             <div class="mb-3">
                                 <label for="min_stock" class="form-label">库存下限 <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="min_stock" name="min_stock" step="0.01"
-                                    min="0" value="{{ product.min_stock or '' }}" required>
+                                    min="0" value="{{ product.min_stock or '10' }}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="max_stock" class="form-label">库存上限 <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="max_stock" name="max_stock" step="0.01"
-                                    min="0" value="{{ product.max_stock or '' }}" required>
+                                    min="0" value="{{ product.max_stock or '100' }}" required>
                             </div>
                         </div>
                     </div>
@@ -115,7 +115,7 @@
                         <a href="{{ url_for('product.products') }}" class="btn btn-secondary">
                             <i class="bi bi-x"></i> 取消
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
                             <i class="bi bi-check"></i> 保存
                         </button>
                     </div>
@@ -138,4 +138,163 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // 表单验证函数
+    function validateForm() {
+        let isValid = true;
+        const errors = [];
+        
+        // 清除之前的错误样式
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+        });
+        document.querySelectorAll('.invalid-feedback').forEach(el => {
+            el.remove();
+        });
+        
+        // 验证商品名称
+        const name = document.getElementById('name');
+        if (!name.value.trim()) {
+            showFieldError(name, '请输入商品名称');
+            isValid = false;
+        }
+        
+        // 验证商品分类
+        const categoryId = document.getElementById('category_id');
+        if (!categoryId.value) {
+            showFieldError(categoryId, '请选择商品分类');
+            isValid = false;
+        }
+        
+        // 验证商品规格
+        const specification = document.getElementById('specification');
+        if (!specification.value.trim()) {
+            showFieldError(specification, '请输入商品规格');
+            isValid = false;
+        }
+        
+        // 验证商品单位
+        const unit = document.getElementById('unit');
+        if (!unit.value.trim()) {
+            showFieldError(unit, '请输入商品单位');
+            isValid = false;
+        }
+        
+        // 验证进货价格
+        const purchasePrice = document.getElementById('purchase_price');
+        if (!purchasePrice.value || parseFloat(purchasePrice.value) < 0) {
+            showFieldError(purchasePrice, '请输入有效的进货价格');
+            isValid = false;
+        }
+        
+        // 验证销售价格
+        const salePrice = document.getElementById('sale_price');
+        if (!salePrice.value || parseFloat(salePrice.value) < 0) {
+            showFieldError(salePrice, '请输入有效的销售价格');
+            isValid = false;
+        }
+        
+        // 验证库存下限
+        const minStock = document.getElementById('min_stock');
+        if (!minStock.value || parseFloat(minStock.value) < 0) {
+            showFieldError(minStock, '请输入有效的库存下限');
+            isValid = false;
+        }
+        
+        // 验证库存上限
+        const maxStock = document.getElementById('max_stock');
+        if (!maxStock.value || parseFloat(maxStock.value) < 0) {
+            showFieldError(maxStock, '请输入有效的库存上限');
+            isValid = false;
+        }
+        
+        // 验证库存上限是否大于下限
+        if (minStock.value && maxStock.value && parseFloat(maxStock.value) < parseFloat(minStock.value)) {
+            showFieldError(maxStock, '库存上限不能小于库存下限');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    // 显示字段错误
+    function showFieldError(field, message) {
+        field.classList.add('is-invalid');
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        feedback.textContent = message;
+        field.parentNode.appendChild(feedback);
+    }
+    
+    // 表单提交事件
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            // 滚动到第一个错误字段
+            const firstError = document.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+    });
+    
+    // 实时验证
+    const requiredFields = ['name', 'category_id', 'specification', 'unit', 'purchase_price', 'sale_price', 'min_stock', 'max_stock'];
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('blur', function() {
+                // 清除当前字段的错误状态
+                this.classList.remove('is-invalid');
+                const feedback = this.parentNode.querySelector('.invalid-feedback');
+                if (feedback) {
+                    feedback.remove();
+                }
+                
+                // 验证当前字段
+                if (fieldId === 'name' && !this.value.trim()) {
+                    showFieldError(this, '请输入商品名称');
+                } else if (fieldId === 'category_id' && !this.value) {
+                    showFieldError(this, '请选择商品分类');
+                } else if (fieldId === 'specification' && !this.value.trim()) {
+                    showFieldError(this, '请输入商品规格');
+                } else if (fieldId === 'unit' && !this.value.trim()) {
+                    showFieldError(this, '请输入商品单位');
+                } else if ((fieldId === 'purchase_price' || fieldId === 'sale_price') && (!this.value || parseFloat(this.value) < 0)) {
+                    showFieldError(this, '请输入有效的价格');
+                } else if ((fieldId === 'min_stock' || fieldId === 'max_stock') && (!this.value || parseFloat(this.value) < 0)) {
+                    showFieldError(this, '请输入有效的库存数量');
+                }
+            });
+        }
+    });
+    
+    // 库存上下限联动验证
+    const minStockField = document.getElementById('min_stock');
+    const maxStockField = document.getElementById('max_stock');
+    
+    function validateStockRange() {
+        if (minStockField.value && maxStockField.value) {
+            const minVal = parseFloat(minStockField.value);
+            const maxVal = parseFloat(maxStockField.value);
+            
+            if (maxVal < minVal) {
+                maxStockField.classList.remove('is-invalid');
+                const feedback = maxStockField.parentNode.querySelector('.invalid-feedback');
+                if (feedback) feedback.remove();
+                showFieldError(maxStockField, '库存上限不能小于库存下限');
+            }
+        }
+    }
+    
+    minStockField.addEventListener('input', validateStockRange);
+    maxStockField.addEventListener('input', validateStockRange);
+});
+</script>
 {% endblock %}

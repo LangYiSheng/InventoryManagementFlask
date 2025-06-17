@@ -67,14 +67,13 @@
                         <td>{{ purchase.purchaser or '无' }}</td>
                         <td>{{ purchase.created_at }}</td>
                         <td>
-                            <a href="{{ url_for('purchase.view_purchase', id=purchase.id) }}" class="btn btn-sm btn-outline-info">
+                            <a href="{{ url_for('purchase.view_purchase', id=purchase.id) }}"
+                                class="btn btn-sm btn-outline-info">
                                 <i class="bi bi-eye"></i> 查看
                             </a>
-                            <a href="{{ url_for('purchase.edit_purchase', id=purchase.id) }}"
-                                class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i> 编辑
-                            </a>
-                            <a href="{{ url_for('purchase.purchase_return', id=purchase.id) }}" class="btn btn-sm btn-outline-warning">
+
+                            <a href="{{ url_for('purchase.purchase_return', id=purchase.id) }}"
+                                class="btn btn-sm btn-outline-warning">
                                 <i class="bi bi-arrow-return-left"></i> 退货
                             </a>
                         </td>

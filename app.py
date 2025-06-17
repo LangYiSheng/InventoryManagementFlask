@@ -31,11 +31,11 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username', '')
         password = request.form.get('password', '')
-        
+
         conn = get_db_connection()
         user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
         conn.close()
-        
+
         if user and check_password_hash(user['password_hash'], password):
             session['user_id'] = user['id']
             session['username'] = user['username']
@@ -44,7 +44,7 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('用户名或密码错误！', 'error')
-    
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -57,7 +57,7 @@ def logout():
 @login_required
 def dashboard():
     conn = get_db_connection()
-    
+
     # 获取统计数据
     stats = {
         'total_products': conn.execute('SELECT COUNT(*) as count FROM products').fetchone()['count'],
@@ -65,37 +65,37 @@ def dashboard():
         'total_suppliers': conn.execute('SELECT COUNT(*) as count FROM suppliers').fetchone()['count'],
         'low_stock_products': conn.execute('SELECT COUNT(*) as count FROM products WHERE stock_quantity <= min_stock').fetchone()['count']
     }
-    
+
     # 库存预警
     low_stock_products = conn.execute('''
         SELECT name, stock_quantity, min_stock 
         FROM products 
         WHERE stock_quantity <= min_stock
     ''').fetchall()
-    
+
     high_stock_products = conn.execute('''
         SELECT name, stock_quantity, max_stock 
         FROM products 
         WHERE max_stock > 0 AND stock_quantity >= max_stock
     ''').fetchall()
-    
+
     # 获取最近的交易记录
     recent_transactions = conn.execute('''
         SELECT * FROM financial_transactions 
         ORDER BY transaction_date DESC 
         LIMIT 10
     ''').fetchall()
-    
+
     # 获取系统余额
     balance = conn.execute('SELECT balance FROM system_balance WHERE id = 1').fetchone()
     current_balance = balance['balance'] if balance else 0
-    
+
     conn.close()
-    
-    return render_template('dashboard.html', stats=stats, 
+
+    return render_template('dashboard.html', stats=stats,
                          low_stock_products=low_stock_products,
                          high_stock_products=high_stock_products,
-                         recent_transactions=recent_transactions, 
+                         recent_transactions=recent_transactions,
                          current_balance=current_balance)
 
 # 供应商管理
@@ -106,22 +106,22 @@ def suppliers():
     conn = get_db_connection()
     search = request.args.get('search', '')
     status = request.args.get('status', '')
-    
+
     query = 'SELECT * FROM suppliers WHERE 1=1'
     params = []
-    
+
     if search:
         query += ' AND (name LIKE ? OR contact_person LIKE ? OR phone LIKE ?)'
         params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
-    
+
     if status:
         if status == 'active':
             query += ' AND is_active = 1'
         elif status == 'inactive':
             query += ' AND is_active = 0'
-    
+
     query += ' ORDER BY created_at DESC'
-    
+
     suppliers = conn.execute(query, params).fetchall()
     conn.close()
     return render_template('suppliers.html', suppliers=suppliers, search=search, status=status)
@@ -138,7 +138,7 @@ def add_supplier():
         address = request.form.get('address', '')
         notes = request.form.get('notes', '')
         is_active = 1 if request.form.get('is_active') else 0
-        
+
         conn = get_db_connection()
         conn.execute('''
             INSERT INTO suppliers (name, contact_person, phone, email, address, notes, is_active)
@@ -146,10 +146,10 @@ def add_supplier():
         ''', (name, contact_person, phone, email, address, notes, is_active))
         conn.commit()
         conn.close()
-        
+
         flash('供应商添加成功！', 'success')
         return redirect(url_for('suppliers'))
-    
+
     return render_template('add_supplier.html')
 
 @app.route('/suppliers/edit/<int:id>', methods=['GET', 'POST'])
@@ -158,7 +158,7 @@ def add_supplier():
 def edit_supplier(id):
     conn = get_db_connection()
     supplier = conn.execute('SELECT * FROM suppliers WHERE id = ?', (id,)).fetchone()
-    
+
     if request.method == 'POST':
         name = request.form.get('name', '')
         contact_person = request.form.get('contact_person', '')
@@ -167,7 +167,7 @@ def edit_supplier(id):
         address = request.form.get('address', '')
         notes = request.form.get('notes', '')
         is_active = 1 if request.form.get('is_active') else 0
-        
+
         conn.execute('''
             UPDATE suppliers SET name = ?, contact_person = ?, phone = ?, email = ?, 
                                address = ?, notes = ?, is_active = ?
@@ -175,10 +175,10 @@ def edit_supplier(id):
         ''', (name, contact_person, phone, email, address, notes, is_active, id))
         conn.commit()
         conn.close()
-        
+
         flash('供应商更新成功', 'success')
         return redirect(url_for('suppliers'))
-    
+
     conn.close()
     return render_template('edit_supplier.html', supplier=supplier)
 
@@ -195,18 +195,18 @@ def view_supplier(id):
 @permission_required('suppliers')
 def delete_supplier(id):
     conn = get_db_connection()
-    
+
     # 检查是否有采购订单使用此供应商
     purchase_count = conn.execute('SELECT COUNT(*) FROM purchase_orders WHERE supplier_id = ?', (id,)).fetchone()[0]
     if purchase_count > 0:
         flash('该供应商下存在采购订单，无法删除', 'error')
         conn.close()
         return redirect(url_for('suppliers'))
-    
+
     conn.execute('DELETE FROM suppliers WHERE id = ?', (id,))
     conn.commit()
     conn.close()
-    
+
     flash('供应商删除成功！', 'success')
     return redirect(url_for('suppliers'))
 
@@ -218,20 +218,20 @@ def customers():
     conn = get_db_connection()
     search = request.args.get('search', '')
     status = request.args.get('status', '')
-    
+
     query = 'SELECT * FROM customers WHERE 1=1'
     params = []
-    
+
     if search:
         query += ' AND (name LIKE ? OR contact_person LIKE ? OR phone LIKE ?)'
         params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
-    
+
     if status:
         query += ' AND status = ?'
         params.append(status)
-    
+
     query += ' ORDER BY created_at DESC'
-    
+
     customers = conn.execute(query, params).fetchall()
     conn.close()
     return render_template('customers.html', customers=customers, search=search, status=status)
@@ -248,7 +248,7 @@ def add_customer():
         address = request.form.get('address', '')
         notes = request.form.get('notes', '')
         is_active = 1 if request.form.get('is_active') else 0
-        
+
         conn = get_db_connection()
         conn.execute('''
             INSERT INTO customers (name, contact_person, phone, email, address, notes, is_active)
@@ -256,10 +256,10 @@ def add_customer():
         ''', (name, contact_person, phone, email, address, notes, is_active))
         conn.commit()
         conn.close()
-        
+
         flash('客户添加成功！', 'success')
         return redirect(url_for('customers'))
-    
+
     return render_template('add_customer.html')
 
 @app.route('/customers/edit/<int:id>', methods=['GET', 'POST'])
@@ -268,7 +268,7 @@ def add_customer():
 def edit_customer(id):
     conn = get_db_connection()
     customer = conn.execute('SELECT * FROM customers WHERE id = ?', (id,)).fetchone()
-    
+
     if request.method == 'POST':
         name = request.form.get('name', '')
         contact_person = request.form.get('contact_person', '')
@@ -277,7 +277,7 @@ def edit_customer(id):
         address = request.form.get('address', '')
         notes = request.form.get('notes', '')
         is_active = 1 if request.form.get('is_active') else 0
-        
+
         conn.execute('''
             UPDATE customers SET name = ?, contact_person = ?, phone = ?, email = ?, 
                                address = ?, notes = ?, is_active = ?
@@ -285,10 +285,10 @@ def edit_customer(id):
         ''', (name, contact_person, phone, email, address, notes, is_active, id))
         conn.commit()
         conn.close()
-        
+
         flash('客户更新成功', 'success')
         return redirect(url_for('customers'))
-    
+
     conn.close()
     return render_template('edit_customer.html', customer=customer)
 
@@ -305,18 +305,18 @@ def view_customer(id):
 @permission_required('customers')
 def delete_customer(id):
     conn = get_db_connection()
-    
+
     # 检查是否有销售订单使用此客户
     sales_count = conn.execute('SELECT COUNT(*) FROM sales_orders WHERE customer_id = ?', (id,)).fetchone()[0]
     if sales_count > 0:
         flash('该客户下存在销售订单，无法删除', 'error')
         conn.close()
         return redirect(url_for('customers'))
-    
+
     conn.execute('DELETE FROM customers WHERE id = ?', (id,))
     conn.commit()
     conn.close()
-    
+
     flash('客户删除成功！', 'success')
     return redirect(url_for('customers'))
 
@@ -328,7 +328,7 @@ def inventory():
     conn = get_db_connection()
     search = request.args.get('search', '')
     stock_status = request.args.get('stock_status', '')
-    
+
     query = '''
         SELECT p.*, c.name as category_name,
                CASE 
@@ -342,11 +342,11 @@ def inventory():
         WHERE 1=1
     '''
     params = []
-    
+
     if search:
         query += ' AND (p.name LIKE ? OR p.specification LIKE ?)'
         params.extend([f'%{search}%', f'%{search}%'])
-    
+
     if stock_status == 'low':
         query += ' AND p.stock_quantity < p.min_stock'
     elif stock_status == 'out':
@@ -355,11 +355,11 @@ def inventory():
         query += ' AND p.stock_quantity > p.max_stock'
     elif stock_status == 'normal':
         query += ' AND p.stock_quantity >= p.min_stock AND p.stock_quantity <= p.max_stock'
-    
+
     query += ' ORDER BY p.name'
-    
+
     inventory = conn.execute(query, params).fetchall()
-    
+
     # 统计信息
     stats = {
         'total_products': conn.execute('SELECT COUNT(*) as count FROM products').fetchone()['count'],
@@ -367,23 +367,23 @@ def inventory():
         'low_stock': conn.execute('SELECT COUNT(*) as count FROM products WHERE stock_quantity < min_stock AND stock_quantity > 0').fetchone()['count'],
         'out_of_stock': conn.execute('SELECT COUNT(*) as count FROM products WHERE stock_quantity <= 0').fetchone()['count']
     }
-    
+
     conn.close()
-    
-    return render_template('inventory.html', inventory=inventory, stats=stats, 
+
+    return render_template('inventory.html', inventory=inventory, stats=stats,
                          search=search, stock_status=stock_status)
 
 @app.route('/inventory/movements/<int:product_id>')
 @login_required
 def inventory_movements(product_id):
     conn = get_db_connection()
-    
-    product = conn.execute('SELECT * FROM products WHERE id = ?', (product_id,)).fetchone()
+
+    product = conn.execute('SELECT *, stock_quantity as current_stock FROM products WHERE id = ?', (product_id,)).fetchone()
     if not product:
         flash('商品不存在！', 'error')
         conn.close()
         return redirect(url_for('inventory'))
-    
+
     movements = conn.execute('''
         SELECT sm.*, u.username as operator_name
         FROM stock_movements sm
@@ -391,7 +391,7 @@ def inventory_movements(product_id):
         WHERE sm.product_id = ?
         ORDER BY sm.created_at DESC
     ''', (product_id,)).fetchall()
-    
+
     conn.close()
     return render_template('inventory_movements.html', product=product, movements=movements)
 
@@ -401,30 +401,30 @@ def inventory_movements(product_id):
 @permission_required('finance')
 def finance():
     conn = get_db_connection()
-    
+
     # 获取系统余额
     balance_row = conn.execute('SELECT * FROM system_balance WHERE id = 1').fetchone()
     balance = balance_row['balance'] if balance_row else 0
-    
+
     # 获取交易记录
     search = request.args.get('search', '')
     transaction_type = request.args.get('transaction_type', '')
-    
+
     query = 'SELECT * FROM financial_transactions WHERE 1=1'
     params = []
-    
+
     if search:
         query += ' AND (order_no LIKE ? OR counterpart LIKE ? OR notes LIKE ?)'
         params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
-    
+
     if transaction_type:
         query += ' AND transaction_type = ?'
         params.append(transaction_type)
-    
+
     query += ' ORDER BY transaction_date DESC LIMIT 100'
-    
+
     transactions = conn.execute(query, params).fetchall()
-    
+
     # 今日统计
     today = datetime.now().strftime('%Y-%m-%d')
     today_income = conn.execute('''
@@ -432,21 +432,21 @@ def finance():
         FROM financial_transactions 
         WHERE DATE(transaction_date) = ? AND transaction_type IN ('销售收入', '采购退款')
     ''', (today,)).fetchone()['total']
-    
+
     today_expense = conn.execute('''
         SELECT COALESCE(SUM(amount), 0) as total 
         FROM financial_transactions 
-        WHERE DATE(transaction_date) = ? AND transaction_type = '采购支出'
+        WHERE DATE(transaction_date) = ? AND transaction_type IN ('采购支出', '销售退款')
     ''', (today,)).fetchone()['total']
-    
+
     stats = {
         'today_income': today_income,
         'today_expense': today_expense
     }
-    
+
     conn.close()
-    
-    return render_template('finance.html', balance=balance, transactions=transactions, 
+
+    return render_template('finance.html', balance=balance, transactions=transactions,
                          search=search, transaction_type=transaction_type, stats=stats)
 
 @app.route('/finance/adjust', methods=['GET', 'POST'])
@@ -457,14 +457,14 @@ def finance_adjust():
         adjust_type = request.form.get('adjustment_type', '')
         amount = float(request.form.get('amount', 0))
         reason = request.form.get('reason', '')
-        
+
         conn = get_db_connection()
         try:
             if adjust_type == 'deposit':
                 # 充值
                 conn.execute('UPDATE system_balance SET balance = balance + ? WHERE id = 1', (amount,))
-                record_financial_transaction(conn, '调整', 
-                    f'DEP{datetime.now().strftime("%Y%m%d%H%M%S")}', 
+                record_financial_transaction(conn, '调整',
+                    f'DEP{datetime.now().strftime("%Y%m%d%H%M%S")}',
                     amount, '系统', session['username'], reason)
             else:
                 # 提现
@@ -472,12 +472,12 @@ def finance_adjust():
                 if current_balance < amount:
                     flash('余额不足，无法提现！', 'error')
                     return redirect(url_for('finance_adjust'))
-                
+
                 conn.execute('UPDATE system_balance SET balance = balance - ? WHERE id = 1', (amount,))
-                record_financial_transaction(conn, '调整', 
-                    f'WIT{datetime.now().strftime("%Y%m%d%H%M%S")}', 
+                record_financial_transaction(conn, '调整',
+                    f'WIT{datetime.now().strftime("%Y%m%d%H%M%S")}',
                     amount, '系统', session['username'], reason)
-            
+
             conn.commit()
             flash(f'{'充值' if adjust_type == 'deposit' else '提现'}成功！', 'success')
             return redirect(url_for('finance'))
@@ -486,12 +486,12 @@ def finance_adjust():
             flash(f'操作失败：{str(e)}', 'error')
         finally:
             conn.close()
-    
+
     # GET 请求时获取余额信息
     conn = get_db_connection()
     balance = conn.execute('SELECT * FROM system_balance WHERE id = 1').fetchone()
     conn.close()
-    
+
     return render_template('finance_adjust.html', balance=balance)
 
 # 用户管理
@@ -502,32 +502,32 @@ def profile():
         old_password = request.form.get('old_password', '')
         new_password = request.form.get('new_password', '')
         confirm_password = request.form.get('confirm_password', '')
-        
+
         if new_password != confirm_password:
             flash('新密码和确认密码不一致！', 'error')
             return redirect(url_for('profile'))
-        
+
         conn = get_db_connection()
         user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        
+
         if not check_password_hash(user['password_hash'], old_password):
             flash('原密码错误！', 'error')
             conn.close()
             return render_template('profile.html', user=user)
-        
+
         # 更新密码
         new_password_hash = generate_password_hash(new_password)
         conn.execute('UPDATE users SET password_hash = ? WHERE id = ?', (new_password_hash, session['user_id']))
         conn.commit()
         conn.close()
-        
+
         flash('密码修改成功！', 'success')
         return redirect(url_for('profile'))
-    
+
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
     conn.close()
-    
+
     return render_template('profile.html', user=user)
 
 # 用户管理
@@ -549,16 +549,16 @@ def add_user():
         password = request.form.get('password', '')
         role = request.form.get('role', '')
         permissions = ','.join(request.form.getlist('permissions'))
-        
+
         conn = get_db_connection()
-        
+
         # 检查用户名是否已存在
         existing_user = conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
         if existing_user:
             flash('用户名已存在！', 'error')
             conn.close()
             return render_template('add_user.html')
-        
+
         # 创建用户
         password_hash = generate_password_hash(password)
         conn.execute(
@@ -567,10 +567,10 @@ def add_user():
         )
         conn.commit()
         conn.close()
-        
+
         flash('用户创建成功！', 'success')
         return redirect(url_for('users'))
-    
+
     return render_template('add_user.html')
 
 @app.route('/users/edit/<int:id>', methods=['GET', 'POST'])
@@ -579,24 +579,24 @@ def add_user():
 def edit_user(id):
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (id,)).fetchone()
-    
+
     if not user:
         flash('用户不存在！', 'error')
         conn.close()
         return redirect(url_for('users'))
-    
+
     if request.method == 'POST':
         username = request.form.get('username', '')
         role = request.form.get('role', '')
         permissions = ','.join(request.form.getlist('permissions'))
-        
+
         # 检查用户名是否已被其他用户使用
         existing_user = conn.execute('SELECT id FROM users WHERE username = ? AND id != ?', (username, id)).fetchone()
         if existing_user:
             flash('用户名已存在！', 'error')
             conn.close()
             return render_template('edit_user.html', user=user)
-        
+
         # 更新用户信息
         conn.execute(
             'UPDATE users SET username = ?, role = ?, permissions = ? WHERE id = ?',
@@ -604,10 +604,10 @@ def edit_user(id):
         )
         conn.commit()
         conn.close()
-        
+
         flash('用户信息更新成功！', 'success')
         return redirect(url_for('users'))
-    
+
     conn.close()
     return render_template('edit_user.html', user=user)
 
@@ -618,19 +618,19 @@ def delete_user(id):
     if id == session['user_id']:
         flash('不能删除自己的账户！', 'error')
         return redirect(url_for('users'))
-    
+
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (id,)).fetchone()
-    
+
     if not user:
         flash('用户不存在！', 'error')
         conn.close()
         return redirect(url_for('users'))
-    
+
     conn.execute('DELETE FROM users WHERE id = ?', (id,))
     conn.commit()
     conn.close()
-    
+
     flash(f'用户 {user["username"]} 删除成功！', 'success')
     return redirect(url_for('users'))
 
@@ -638,5 +638,5 @@ if __name__ == '__main__':
     # 初始化数据库
     if not os.path.exists('inventory_system.db'):
         init_db()
-    
-    app.run(debug=True, host='0.0.0.0', port=16666)
+
+    app.run(debug=True, host='0.0.0.0', port=5000)

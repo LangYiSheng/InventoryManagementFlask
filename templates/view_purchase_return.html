@@ -47,6 +47,7 @@
             </div>
             <div class="card-body">
                 {% if items %}
+                {% set total_amount = 0 %}
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -60,7 +61,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% set total_amount = 0 %}
                             {% for item in items %}
                             <tr>
                                 <td>{{ item.product_name }}</td>
@@ -68,15 +68,14 @@
                                 <td>{{ item.unit or '无' }}</td>
                                 <td>{{ item.quantity }}</td>
                                 <td>¥{{ "%.2f"|format(item.unit_price) }}</td>
-                                <td>¥{{ "%.2f"|format(item.amount) }}</td>
-                                {% set total_amount = total_amount + item.amount %}
+                                <td class="item-amount">¥{{ "%.2f"|format(item.amount) }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                         <tfoot>
                             <tr class="table-warning">
                                 <th colspan="5" class="text-end">退货总金额：</th>
-                                <th>¥{{ "%.2f"|format(total_amount) }}</th>
+                                <th id="total-amount">¥0.00</th>
                             </tr>
                         </tfoot>
                     </table>
@@ -91,5 +90,31 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 计算退货总金额
+    function calculateTotal() {
+        const amountCells = document.querySelectorAll('.item-amount');
+        let total = 0;
+        
+        amountCells.forEach(cell => {
+            // 提取金额数字，去掉¥符号
+            const amountText = cell.textContent.replace('¥', '').replace(',', '');
+            const amount = parseFloat(amountText) || 0;
+            total += amount;
+        });
+        
+        // 更新总金额显示
+        const totalElement = document.getElementById('total-amount');
+        if (totalElement) {
+            totalElement.textContent = '¥' + total.toFixed(2);
+        }
+    }
+    
+    // 页面加载完成后计算总金额
+    calculateTotal();
+});
+</script>
 
 {% endblock %}

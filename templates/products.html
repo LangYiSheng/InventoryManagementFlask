@@ -19,7 +19,7 @@
             <div class="col-md-4">
                 <label for="search" class="form-label">搜索</label>
                 <input type="text" class="form-control" id="search" name="search" value="{{ search }}"
-                    placeholder="商品编码/名称">
+                    placeholder="商品名称">
             </div>
             <div class="col-md-3">
                 <label for="status" class="form-label">状态</label>
@@ -93,7 +93,8 @@
                                 class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i> 编辑
                             </a>
-                            <a href="{{ url_for('product.view_product', id=product.id) }}" class="btn btn-sm btn-outline-info">
+                            <a href="{{ url_for('product.view_product', id=product.id) }}"
+                                class="btn btn-sm btn-outline-info">
                                 <i class="bi bi-eye"></i> 详情
                             </a>
                             <a href="{{ url_for('product.delete_product', id=product.id) }}"

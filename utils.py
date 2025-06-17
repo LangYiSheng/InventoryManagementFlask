@@ -59,5 +59,5 @@ def record_financial_transaction(conn, transaction_type, order_no, amount, count
         conn.execute('UPDATE system_balance SET balance = balance + ? WHERE id = 1', (amount,))
     elif transaction_type == '采购退款':
         conn.execute('UPDATE system_balance SET balance = balance + ? WHERE id = 1', (amount,))
-    # 可以根据需要添加其他交易类型的余额更新逻辑，例如退款等
-    # 例如: elif transaction_type == '销售退款': conn.execute('UPDATE system_balance SET balance = balance - ? WHERE id = 1', (amount,))
+    elif transaction_type == '销售退款': # 销售退款时，金额已经是负数，所以这里用加法
+        conn.execute('UPDATE system_balance SET balance = balance + ? WHERE id = 1', (amount,))
